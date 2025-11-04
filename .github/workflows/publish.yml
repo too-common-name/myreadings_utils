@@ -1,0 +1,28 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  publish:
+    name: Build and Publish JAR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Create settings.xml for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>GITHUB_ACTOR</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+      - name: Build and Deploy with Maven
+        run: mvn -B deploy
